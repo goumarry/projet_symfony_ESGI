@@ -22,6 +22,13 @@
 
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
+                <div class="d-flex justify-content-between small mb-4">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input bg-dark border-secondary" name="_remember_me" id="remember_me">
+                        <label class="form-check-label" for="remember_me">Se souvenir de moi</label>
+                    </div>
+                </div>
+
                 <button class="btn btn-netflix w-100 py-2 fs-5 mb-3" type="submit">S'identifier</button>
 
                 <div class="d-flex justify-content-end small mb-4">
