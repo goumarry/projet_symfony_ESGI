@@ -1,12 +1,33 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Reset your password{% endblock %}
+{% block title %}Nouveau mot de passe{% endblock %}
 
 {% block body %}
-    <h1>Reset your password</h1>
+    <div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+        <div class="card-netflix p-5" style="width: 450px;">
+            <h2 class="mb-4 fw-bold text-white">Réinitialisation</h2>
 
-    {{ form_start(resetForm) }}
-        {{ form_row(resetForm.plainPassword) }}
-        <button class="btn btn-primary">Reset password</button>
-    {{ form_end(resetForm) }}
+            {{ form_start(resetForm) }}
+            <div class="mb-3">
+
+                {% if resetForm.plainPassword.first is defined %}
+                    {{ form_widget(resetForm.plainPassword.first, {'attr': {'class': 'form-control mb-3', 'placeholder': 'Nouveau mot de passe'}}) }}
+                    {{ form_widget(resetForm.plainPassword.second, {'attr': {'class': 'form-control', 'placeholder': 'Confirmer le mot de passe'}}) }}
+                {% else %}
+                    {{ form_widget(resetForm.plainPassword, {'attr': {'class': 'form-control', 'placeholder': 'Nouveau mot de passe'}}) }}
+                {% endif %}
+
+                <div class="text-danger small mt-2">
+                    {{ form_errors(resetForm.plainPassword) }}
+                    {% if resetForm.plainPassword.first is defined %}
+                        {{ form_errors(resetForm.plainPassword.first) }}
+                        {{ form_errors(resetForm.plainPassword.second) }}
+                    {% endif %}
+                </div>
+            </div>
+
+            <button class="btn btn-netflix w-100 py-2 fs-5 mt-2" type="submit">Valider</button>
+            {{ form_end(resetForm) }}
+        </div>
+    </div>
 {% endblock %}

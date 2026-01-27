@@ -1,21 +1,40 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Inscription{% endblock %}
+{% block title %}S'inscrire - NetTask{% endblock %}
 
 {% block body %}
-    <div class="container">
-        <h1>Inscription</h1>
+    <div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+        <div class="card-netflix p-5" style="width: 450px;">
 
-        {{ form_errors(registrationForm) }}
+            <h2 class="mb-4 fw-bold text-white">S'inscrire</h2>
 
-        {{ form_start(registrationForm) }}
+            {{ form_start(registrationForm) }}
 
-        {{ form_row(registrationForm.email) }}
-        {{ form_row(registrationForm.plainPassword) }}
-        {{ form_row(registrationForm.agreeTerms) }}
+            <div class="mb-3">
+                {{ form_widget(registrationForm.email, {'attr': {'class': 'form-control', 'placeholder': 'Email'}}) }}
+                <div class="text-danger small mt-1">{{ form_errors(registrationForm.email) }}</div>
+            </div>
 
-        <button type="submit" class="btn btn-primary">S'inscrire</button>
+            <div class="mb-4">
+                {{ form_widget(registrationForm.plainPassword, {'attr': {'class': 'form-control', 'placeholder': 'Mot de passe'}}) }}
+                <div class="text-danger small mt-1">{{ form_errors(registrationForm.plainPassword) }}</div>
+            </div>
 
-        {{ form_end(registrationForm) }}
+            <div class="mb-4 form-check">
+                {{ form_widget(registrationForm.agreeTerms, {'attr': {'class': 'form-check-input bg-secondary border-0'}}) }}
+                <label class="form-check-label text-white small" for="registration_form_agreeTerms">
+                    J'accepte les conditions d'utilisation
+                </label>
+                <div class="text-danger small">{{ form_errors(registrationForm.agreeTerms) }}</div>
+            </div>
+
+            <button type="submit" class="btn btn-netflix w-100 py-2 fs-5">Commencer</button>
+
+            {{ form_end(registrationForm) }}
+
+            <div class="text-muted mt-4">
+                <a href="{{ path('app_login') }}" class="text-white ms-1">Déjà abonné ? Connectez-vous.</a>
+            </div>
+        </div>
     </div>
 {% endblock %}

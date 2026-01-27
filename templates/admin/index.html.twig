@@ -1,0 +1,98 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Admin - NetTask{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="fw-bold">Dashboard Admin</h1>
+            <span class="badge bg-danger fs-6">ZONE PROTÉGÉE</span>
+        </div>
+
+        <div class=" p-4">
+            <h4 class="text-secondary mb-3">Utilisateurs Inscrits</h4>
+            <div class="table-responsive">
+                <table class="table table-dark table-hover align-middle">
+                    <thead>
+                    <tr class="text-secondary">
+                        <th>ID</th>
+                        <th>EMAIL</th>
+                        <th>RÔLES</th>
+                        <th>STATUT</th>
+                        <th>INSCRIPTION</th>
+                        <th>CONNEXION</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for user in users %}
+                        <tr>
+                            <td>#{{ user.id }}</td>
+                            <td class="fw-bold">{{ user.email }}</td>
+                            <td>
+                                {% for role in user.roles %}
+                                    <span class="badge border border-secondary text-secondary">{{ role|replace({'ROLE_': ''}) }}</span>
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% if user.isVerified %}
+                                    <span class="text-success">● Actif</span>
+                                {% else %}
+                                    <span class="text-danger">● En attente</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ user.createdAt|date('d/m/Y') }}</td>
+                            <td>
+                                {% if user.lastLoginAt %}
+                                    {{ user.lastLoginAt|date('d/m/Y H:i') }}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">Aucun utilisateur trouvé.</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="my-5"></div>
+
+        <div class=" p-4">
+            <h4 class="text-secondary mb-3">Journal de connexions ( derniers événemments )</h4>
+            <div class="table-responsive">
+                <table class="table table-dark table-hover align-middle">
+                    <thead>
+                    <tr class="text-secondary">
+                        <th>Date</th>
+                        <th>Utilisateur (Email)</th>
+                        <th>IP</th>
+                        <th class="text-end">Résultat</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for attempt in attempts %}
+                        <tr>
+                            <td>{{ attempt.happenedAt|date('d/m H:i:s') }}</td>
+                            <td class="text-white">{{ attempt.email }}</td>
+                            <td class="small">{{ attempt.ipAddress }}</td>
+                            <td class="text-end">
+                                {% if attempt.isSuccessful %}
+                                    <span class="badge bg-success bg-opacity-25 text-success border border-success">SUCCÈS</span>
+                                {% else %}
+                                    <span class="badge bg-danger bg-opacity-25 text-danger border border-danger">ÉCHEC</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="4" class="text-center py-4 text-muted">Rien à signaler.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
