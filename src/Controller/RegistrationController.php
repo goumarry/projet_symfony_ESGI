@@ -4,59 +4,31 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Form\RegistrationFormType;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Service\AccountService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
-use SymfonyCasts\Bundle\VerifyEmail\VerifyEmailHelperInterface;
-use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Email;
+use App\Repository\UserRepository;
 
 class RegistrationController extends AbstractController
 {
     #[Route('/register', name: 'app_register')]
-    public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager, VerifyEmailHelperInterface $verifyEmailHelper, MailerInterface $mailer): Response
+    public function register(Request $request, AccountService $accountService): Response
     {
         $user = new User();
-
         $form = $this->createForm(RegistrationFormType::class, $user);
-
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
 
-            $plainPassword = $form->get('plainPassword')->getData();
-
-            $user->setPassword(
-                $userPasswordHasher->hashPassword(
-                    $user,
-                    $plainPassword
-                )
+            $accountService->registerUser(
+                $user,
+                $form->get('plainPassword')->getData()
             );
 
-            $entityManager->persist($user);
-            $entityManager->flush();
-
-            $signatureComponents = $verifyEmailHelper->generateSignature(
-                'app_verify_email',
-                $user->getId(),
-                $user->getEmail(),
-                ['id' => $user->getId()]
-            );
-
-            $email = (new Email())
-                ->from('admin@monsite.com')
-                ->to($user->getEmail())
-                ->subject('Confirmez votre email')
-                ->html('<p>Merci de confirmer votre compte en cliquant ici : <a href="'.$signatureComponents->getSignedUrl().'">Valider mon compte</a></p>');
-
-            $mailer->send($email);
-
-            $this->addFlash('success', 'Inscription réussie ! Veuillez vérifier vos emails.');
-
+            $this->addFlash('success', 'Inscription réussie ! Vérifiez vos emails.');
             return $this->redirectToRoute('app_login');
         }
 
@@ -66,27 +38,30 @@ class RegistrationController extends AbstractController
     }
 
     #[Route('/verify/email', name: 'app_verify_email')]
-    public function verifyUserEmail(Request $request, VerifyEmailHelperInterface $verifyEmailHelper, EntityManagerInterface $entityManager): Response
+    public function verifyUserEmail(Request $request, AccountService $accountService, UserRepository $userRepository): Response
     {
         $id = $request->query->get('id');
-        $user = $entityManager->getRepository(User::class)->find($id);
 
-        if (!$user) {
+        if (null === $id) {
+            return $this->redirectToRoute('app_register');
+        }
+
+        $user = $userRepository->find($id);
+
+        if (null === $user) {
             throw $this->createNotFoundException();
         }
 
         try {
-            $verifyEmailHelper->validateEmailConfirmation($request->getUri(), $user->getId(), $user->getEmail());
-        } catch (VerifyEmailExceptionInterface $e) {
-            $this->addFlash('verify_email_error', $e->getReason());
+            $accountService->verifyUserEmail($user, $request->getUri());
+        } catch (VerifyEmailExceptionInterface $exception) {
+            $this->addFlash('verify_email_error', $exception->getReason());
+
             return $this->redirectToRoute('app_register');
         }
 
-        // Si tout est bon, on active !
-        $user->setIsVerified(true);
-        $entityManager->flush();
+        $this->addFlash('success', 'Votre email a été vérifié ! Vous pouvez vous connecter.');
 
-        $this->addFlash('success', 'Votre email est vérifié ! Connectez-vous.');
         return $this->redirectToRoute('app_login');
     }
 }
