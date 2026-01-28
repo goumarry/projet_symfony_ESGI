@@ -8,7 +8,7 @@
         <div class="text-center text-white p-4" style="max-width: 700px;">
             {% if app.user %}
                 <h1 class="display-3 fw-bold mb-3">Bon retour parmi nous.</h1>
-                <h2 class="h4 mb-4">Prêt à gérer vos tâches ?</h2>
+                <h2 class="h4 mb-4">Prêt à consulter des livres ?</h2>
                 {% if is_granted('ROLE_ADMIN') %}
                     <a href="{{ path('app_books_admin') }}" class="btn btn-netflix btn-lg px-5 py-3 fs-4">Books Admin</a>
                 {% else %}
