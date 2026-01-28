@@ -52,6 +52,12 @@ security:
         - { path: ^/verify/email, roles: PUBLIC_ACCESS }
         - { path: ^/reset-password, roles: PUBLIC_ACCESS }
 
+#        - { path: ^/api, roles: PUBLIC_ACCESS }
+
+        - { path: ^/api/books, methods: [ POST, PUT, DELETE ], roles: ROLE_ADMIN }
+
+        - { path: ^/api/books, methods: [ GET ], roles: ROLE_USER }
+
         - { path: ^/$, roles: PUBLIC_ACCESS }
 
         - { path: ^/admin, roles: ROLE_ADMIN }

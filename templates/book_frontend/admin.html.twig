@@ -1,0 +1,243 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Admin Livres - NetBook{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+{% endblock %}
+
+{% block body %}
+    <style>
+        .form-control-dark {
+            background-color: #2b3035 !important;
+            border: 1px solid #495057 !important;
+            color: #fff !important;
+        }
+        .form-control-dark:focus {
+            background-color: #343a40 !important;
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
+        }
+        .form-control-dark::placeholder {
+            color: #adb5bd !important;
+        }
+    </style>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="fw-bold">Gestion des Livres</h1>
+            <span class="badge bg-danger fs-6">ZONE PROTÉGÉE</span>
+        </div>
+
+        <div class="p-4 mb-5 border border-secondary rounded bg-dark">
+            <h4 class="text-secondary mb-3">Ajouter un livre</h4>
+            <form id="addBookForm">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="text-secondary small mb-1">Titre</label>
+                        <input type="text" id="titre" class="form-control form-control-dark" placeholder="Titre du livre" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="text-secondary small mb-1">Auteur</label>
+                        <input type="text" id="auteur" class="form-control form-control-dark" placeholder="Nom de l'auteur" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="text-secondary small mb-1">Description</label>
+                        <input type="text" id="description" class="form-control form-control-dark" placeholder="Description courte">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="text-secondary small mb-1">Date de publication</label>
+                        <input type="date" id="date" class="form-control form-control-dark" required>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-5">
+                    <small class=""><i class="bi bi-info-circle"></i> Un ISBN valide sera généré automatiquement.</small>
+                    <button type="submit" class="btn btn-danger px-4 py-2 fw-bold">
+                        <i class="bi bi-plus-lg"></i> Ajouter via API
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="">
+            <h4 class="text-secondary mb-3">Liste des Livres (API)</h4>
+            <div class="table-responsive">
+                <table class="table table-dark table-hover align-middle">
+                    <thead>
+                    <tr class="text-secondary">
+                        <th style="width: 50px;">ID</th>
+                        <th>TITRE</th>
+                        <th>AUTEUR</th>
+                        <th>DESCRIPTION</th>
+                        <th style="width: 250px;" class="text-end">ACTIONS</th>
+                    </tr>
+                    </thead>
+                    <tbody id="books-table-body">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log("🚀 LE SCRIPT ADMIN EST CHARGÉ !");
+
+        function generateISBN() {
+            let isbn = "978";
+            for (let i = 0; i < 9; i++) {
+                isbn += Math.floor(Math.random() * 10);
+            }
+            let sum = 0;
+            for (let i = 0; i < 12; i++) {
+                let digit = parseInt(isbn[i]);
+                sum += (i % 2 === 0) ? digit * 1 : digit * 3;
+            }
+            let checkDigit = (10 - (sum % 10)) % 10;
+            return isbn + checkDigit;
+        }
+
+        function loadAdminBooks() {
+            console.log("🔄 Chargement des livres...");
+            $.ajax({
+                url: '/api/books',
+                method: 'GET',
+                success: function(data) {
+                    const tbody = $('#books-table-body');
+                    tbody.empty();
+
+                    if (data.length === 0) {
+                        tbody.html('<tr><td colspan="5" class="text-center py-4 text-muted">Aucun livre trouvé via l\'API.</td></tr>');
+                        return;
+                    }
+
+                    data.forEach(function(book) {
+                        const bookData = encodeURIComponent(JSON.stringify(book));
+
+                        const row = `
+                        <tr id="row-${book.id}" data-book="${bookData}">
+                            <td class="text-secondary">#${book.id}</td>
+
+                            <td class="cell-titre fw-bold text-white">${book.titre}</td>
+                            <td class="cell-auteur text-secondary">${book.auteur}</td>
+                            <td class="cell-description small">${book.description ? book.description : '-'}</td>
+
+                            <td class="text-end">
+                                <div class="btn-group-action">
+                                    <button class="btn btn-outline-secondary me-2" onclick="enableEdit(${book.id})">
+                                        <i class="bi bi-pencil-fill"></i> Éditer
+                                    </button>
+                                    <button class="btn btn-outline-danger" onclick="deleteBook(${book.id})">
+                                        <i class="bi bi-trash-fill"></i> Supprimer
+                                    </button>
+                                </div>
+
+                                <div class="btn-group-save" style="display:none;">
+                                    <button class="btn btn-success me-2" onclick="saveBook(${book.id})">
+                                        <i class="bi bi-check-lg"></i> Sauver
+                                    </button>
+                                    <button class="btn btn-outline-light" onclick="cancelEdit(${book.id})">
+                                        <i class="bi bi-x-lg"></i> Annuler
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                        tbody.append(row);
+                    });
+                },
+                error: function(xhr) {
+                    console.error("❌ Erreur API :", xhr);
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            loadAdminBooks();
+
+            $('#addBookForm').on('submit', function(e) {
+                e.preventDefault();
+
+                const bookData = {
+                    titre: $('#titre').val(),
+                    auteur: $('#auteur').val(),
+                    description: $('#description').val(),
+                    datePublication: $('#date').val(),
+                    isbn: generateISBN()
+                };
+
+                $.ajax({
+                    url: '/api/books',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(bookData),
+                    success: function(response) {
+                        $('#addBookForm')[0].reset();
+                        loadAdminBooks();
+                    },
+                    error: function(xhr) {
+                        alert("Erreur ajout : " + xhr.statusText);
+                    }
+                });
+            });
+        });
+
+        window.enableEdit = function(id) {
+            const row = $(`#row-${id}`);
+            row.find('.btn-group-action').hide();
+            row.find('.btn-group-save').show();
+
+            const titre = row.find('.cell-titre').text();
+            // J'ai enlevé form-control-sm ici aussi pour que l'input soit de taille normale
+            row.find('.cell-titre').html(`<input type="text" class="form-control form-control-dark input-titre" value="${titre}">`);
+
+            const auteur = row.find('.cell-auteur').text();
+            row.find('.cell-auteur').html(`<input type="text" class="form-control form-control-dark input-auteur" value="${auteur}">`);
+
+            let desc = row.find('.cell-description').text();
+            if(desc === '-') desc = '';
+            row.find('.cell-description').html(`<input type="text" class="form-control form-control-dark input-desc" value="${desc}">`);
+        };
+
+        window.cancelEdit = function(id) {
+            loadAdminBooks();
+        };
+
+        window.saveBook = function(id) {
+            const row = $(`#row-${id}`);
+            const originalData = JSON.parse(decodeURIComponent(row.data('book')));
+
+            const updatedData = {
+                titre: row.find('.input-titre').val(),
+                auteur: row.find('.input-auteur').val(),
+                description: row.find('.input-desc').val(),
+                isbn: originalData.isbn,
+                datePublication: originalData.datePublication
+            };
+
+            $.ajax({
+                url: `/api/books/${id}`,
+                method: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify(updatedData),
+                success: function() {
+                    loadAdminBooks();
+                },
+                error: function() {
+                    alert("Erreur lors de la sauvegarde.");
+                }
+            });
+        };
+
+        window.deleteBook = function(id) {
+            if(!confirm('Êtes-vous sûr de vouloir supprimer ce livre ?')) return;
+            $.ajax({
+                url: `/api/books/${id}`,
+                method: 'DELETE',
+                success: function() {
+                    loadAdminBooks();
+                }
+            });
+        };
+    </script>
+{% endblock %}

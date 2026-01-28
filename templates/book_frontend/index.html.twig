@@ -1,0 +1,49 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="container mt-5">
+        <h1>📚 Catalogue des Livres</h1>
+        <div id="loading" class="text-center">Chargement des livres...</div>
+
+        <div id="books-grid" class="row mt-4"></div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $.ajax({
+                url: '/api/books',
+                method: 'GET',
+                dataType: 'json',
+                success: function(books) {
+                    $('#loading').hide();
+
+                    books.forEach(function(book) {
+                        const cardHtml = `
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title">${book.titre}</h5>
+                                <h6 class="card-subtitle mb-2 text-muted">${book.auteur}</h6>
+                                <p class="card-text">${book.description ? book.description : ''}</p>
+                                <span class="badge bg-info text-dark">${book.isbn}</span>
+                                <hr>
+                                <span>Publié le : ${book.datePublication}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                        $('#books-grid').append(cardHtml);
+                    });
+                },
+                error: function(xhr, status, error) {
+                    $('#loading').text("Erreur lors du chargement.");
+                    console.error("Erreur AJAX:", error);
+
+                    if (xhr.status === 401 || xhr.status === 403) {
+                        window.location.href = '/login';
+                    }
+                }
+            });
+        });
+    </script>
+{% endblock %}

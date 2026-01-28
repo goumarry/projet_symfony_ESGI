@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Accueil - NetTask{% endblock %}
+{% block title %}Accueil - NetBook{% endblock %}
 
 {% block body %}
     <div style="height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.8)), url('https://assets.nflxext.com/ffe/siteui/vlv3/f841d4c7-10e1-40af-bcae-07a3f8dc141a/f6d7434e-d6de-4185-a6d4-c77a2d08737b/US-en-20220502-popsignuptwoweeks-perspective_alpha_website_medium.jpg'); background-size: cover; margin-top: -100px;">
@@ -10,8 +10,13 @@
                 <h1 class="display-3 fw-bold mb-3">Bon retour parmi nous.</h1>
                 <h2 class="h4 mb-4">Prêt à gérer vos tâches ?</h2>
                 {% if is_granted('ROLE_ADMIN') %}
-                    <a href="{{ path('app_admin') }}" class="btn btn-netflix btn-lg px-5 py-3 fs-4">Admin</a>
+                    <a href="{{ path('app_books_admin') }}" class="btn btn-netflix btn-lg px-5 py-3 fs-4">Books Admin</a>
+                {% else %}
+                    <a href="{{ path('app_books_catalog') }}" class="btn btn-netflix btn-lg px-5 py-3 fs-4">Books</a>
+
+
                 {% endif %}
+
             {% else %}
                 <h1 class="display-3 fw-bold mb-3">Tâches illimitées, et bien plus encore.</h1>
                 <p class="lead">Prêt à commencer ? Créez votre compte maintenant.</p>
