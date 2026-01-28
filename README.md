@@ -103,5 +103,12 @@ L'interface a été personnalisée avec un thème sombre (Dark Mode) inspiré de
 
 ---
 
+### 🖥️ Environnement de Développement
+Ce projet a été développé et validé sous l'environnement technique suivant :
+* **Symfony :** 6.1.12
+* **PHP :** 8.3.6
+* **Base de données :** MySQL 8.0.44
+* **Composer :** 2.7.1
+
 ## 📝 Auteur
 Projet réalisé par Yoann GOUMARRE dans le cadre du module Symfony.
